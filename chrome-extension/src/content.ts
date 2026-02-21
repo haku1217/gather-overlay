@@ -18,7 +18,8 @@ function initialize(): void {
         if (error instanceof TypeError && error.message.includes('fetch')) {
           return;
         }
-        throw error;
+        // eslint-disable-next-line no-console
+        console.error('[Gather Overlay] Failed to send message:', error);
       });
     },
   });

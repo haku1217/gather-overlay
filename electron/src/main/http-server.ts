@@ -8,10 +8,21 @@ interface HttpServerHandle {
 
 type MessageHandler = (message: ChatMessage) => void;
 
+const MAX_BODY_SIZE = 10 * 1024; // 10KB
+const ALLOWED_ORIGIN = 'https://app.gather.town';
+
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
     const chunks: Buffer[] = [];
+    let totalSize = 0;
+
     req.on('data', (chunk: Buffer) => {
+      totalSize += chunk.length;
+      if (totalSize > MAX_BODY_SIZE) {
+        req.destroy();
+        reject(new Error('Request body too large'));
+        return;
+      }
       chunks.push(chunk);
     });
     req.on('end', () => {
@@ -24,7 +35,7 @@ function readBody(req: IncomingMessage): Promise<string> {
 function sendJson(res: ServerResponse, statusCode: number, body: unknown): void {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
   });
@@ -35,6 +46,10 @@ export function createHttpServer(port: number, onMessage: MessageHandler): HttpS
   let server: Server | null = null;
 
   function start(): void {
+    if (port < 1 || port > 65535) {
+      throw new Error(`Invalid port number: ${String(port)}. Must be between 1 and 65535.`);
+    }
+
     server = createServer((req, res) => {
       // CORS preflight
       if (req.method === 'OPTIONS') {
@@ -59,10 +74,17 @@ export function createHttpServer(port: number, onMessage: MessageHandler): HttpS
             onMessage(result.data);
             sendJson(res, 200, { success: true });
           })
-          .catch(() => {
-            sendJson(res, 400, {
+          .catch((error: unknown) => {
+            const message =
+              error instanceof SyntaxError
+                ? 'Invalid JSON'
+                : error instanceof Error && error.message === 'Request body too large'
+                  ? 'Request body too large'
+                  : 'Failed to read request body';
+            const statusCode = message === 'Request body too large' ? 413 : 400;
+            sendJson(res, statusCode, {
               success: false,
-              error: 'Invalid JSON',
+              error: message,
             });
           });
         return;
