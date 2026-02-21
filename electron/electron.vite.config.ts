@@ -1,11 +1,24 @@
 import { defineConfig, externalizeDepsPlugin } from 'electron-vite';
+import { resolve } from 'node:path';
 
 export default defineConfig({
   main: {
-    plugins: [externalizeDepsPlugin()],
+    build: { target: 'node20' },
+    plugins: [externalizeDepsPlugin({ exclude: ['@gather-overlay/shared'] })],
   },
   preload: {
-    plugins: [externalizeDepsPlugin()],
+    build: { target: 'node20' },
+    plugins: [externalizeDepsPlugin({ exclude: ['@gather-overlay/shared'] })],
   },
-  renderer: {},
+  renderer: {
+    build: {
+      target: 'chrome132',
+      rollupOptions: {
+        input: {
+          index: resolve(__dirname, 'src/renderer/index.html'),
+          control: resolve(__dirname, 'src/renderer/control.html'),
+        },
+      },
+    },
+  },
 });

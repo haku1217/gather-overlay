@@ -5,6 +5,7 @@ directories:
   output: release
 files:
   - out/**/*
+  - resources/**/*
 mac:
   category: public.app-category.utilities
   target:
