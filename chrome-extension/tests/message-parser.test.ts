@@ -20,13 +20,6 @@ describe('parseChannelPreview', () => {
     });
   });
 
-  it('自分の送信メッセージはnullを返す', () => {
-    const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, 'あなた: テストメッセージ');
-
-    expect(result).toBeNull();
-  });
-
   it('コロンを含まないテキストはnullを返す', () => {
     const element = createMockElement('chat-channel-preview-general');
     const result = parseChannelPreview(element, 'invalid text');

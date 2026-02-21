@@ -13,7 +13,6 @@ Gather Overlay — Gatherのチャットメッセージをニコニコ動画風�
 ### Chrome Extension (`chrome-extension/`)
 
 - GatherのチャットDOM (`[data-testid^="chat-channel-preview-"]`) を MutationObserver で監視
-- `innerText` が「あなた:」で始まるメッセージは除外（自分の送信は無視）
 - 新着検知時に `localhost:PORT` へ POST（チャンネル名・送信者・メッセージ内容）
 - GatherはSendbird SDKを使用。チャンネル一覧は常にDOMに存在し、innerTextにプレビューが含まれる
 
