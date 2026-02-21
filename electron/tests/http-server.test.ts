@@ -98,6 +98,6 @@ describe('createHttpServer', () => {
     });
 
     expect(response.status).toBe(204);
-    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('https://app.gather.town');
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*');
   });
 });

@@ -9,7 +9,10 @@ interface HttpServerHandle {
 type MessageHandler = (message: ChatMessage) => void;
 
 const MAX_BODY_SIZE = 10 * 1024; // 10KB
-const ALLOWED_ORIGIN = 'https://app.gather.town';
+// 127.0.0.1 のみリッスンなのでネットワーク境界がセキュリティ。
+// Chrome拡張 content script の Origin は chrome-extension://... になるため、
+// 特定オリジンの制限は不適切。
+const ALLOWED_ORIGIN = '*';
 
 function readBody(req: IncomingMessage): Promise<string> {
   return new Promise((resolve, reject) => {
