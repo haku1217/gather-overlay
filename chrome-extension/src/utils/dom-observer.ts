@@ -1,5 +1,6 @@
 interface DomObserverOptions {
   readonly selector: string;
+  readonly identityAttribute: string;
   readonly onTextChange: (element: Element, newText: string) => void;
 }
 
@@ -8,22 +9,33 @@ interface DomObserverHandle {
   readonly stop: () => void;
 }
 
+/**
+ * DOM要素の変化を監視する。
+ *
+ * identityAttribute で要素を一意に識別するため、
+ * 画面遷移でDOM要素が再生成されても前回テキストを保持できる。
+ */
 export function createDomObserver(options: DomObserverOptions): DomObserverHandle {
-  const { selector, onTextChange } = options;
-  /** 各要素の前回テキストを記憶 */
-  const previousTexts = new Map<Element, string>();
+  const { selector, identityAttribute, onTextChange } = options;
+  /** identityAttribute の値 → 前回テキスト */
+  const previousTexts = new Map<string, string>();
   let observer: MutationObserver | null = null;
 
   function checkElements(): void {
     const elements = document.querySelectorAll(selector);
     for (const element of elements) {
-      const currentText = element.textContent ?? '';
-      const previousText = previousTexts.get(element);
+      const identity = element.getAttribute(identityAttribute) ?? '';
+      if (identity === '') {
+        continue;
+      }
+
+      const currentText = (element as HTMLElement).innerText ?? '';
+      const previousText = previousTexts.get(identity);
 
       if (previousText !== undefined && previousText !== currentText) {
         onTextChange(element, currentText);
       }
-      previousTexts.set(element, currentText);
+      previousTexts.set(identity, currentText);
     }
   }
 

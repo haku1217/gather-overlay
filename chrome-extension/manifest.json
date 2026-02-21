@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "description": "GatherのチャットメッセージをElectronオーバーレイへ転送する",
   "permissions": [],
-  "host_permissions": ["https://app.gather.town/*"],
+  "host_permissions": ["https://app.gather.town/*", "http://127.0.0.1:*/*"],
   "content_scripts": [
     {
       "matches": ["https://app.gather.town/*"],

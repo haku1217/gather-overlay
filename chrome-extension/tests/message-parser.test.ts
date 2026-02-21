@@ -8,50 +8,49 @@ function createMockElement(testId: string): Element {
 }
 
 describe('parseChannelPreview', () => {
-  it('正常なメッセージを解析できる', () => {
-    const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, 'John: Hello world');
+  it('通常のチャンネルプレビューを解析できる', () => {
+    const element = createMockElement('chat-channel-preview-tacoms-inc');
+    const text = 'tacoms-inc\nあなた: 全体チャット投げてます？\n9/19';
+    const result = parseChannelPreview(element, text);
 
     expect(result).toEqual({
-      channel: 'general',
-      sender: 'John',
-      message: 'Hello world',
+      channel: 'tacoms-inc',
+      sender: 'あなた',
+      message: '全体チャット投げてます？',
       timestamp: expect.any(String),
     });
   });
 
-  it('コロンを含まないテキストはnullを返す', () => {
-    const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, 'invalid text');
+  it('未読バッジ付きのプレビューを解析できる', () => {
+    const element = createMockElement('chat-channel-preview-mori さんと hokazaki さん');
+    const text = '2\nmori さんと hokazaki さん\nあなた: 声聞こえてますが、大丈夫です？\n9/1';
+    const result = parseChannelPreview(element, text);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({
+      channel: 'mori さんと hokazaki さん',
+      sender: 'あなた',
+      message: '声聞こえてますが、大丈夫です？',
+      timestamp: expect.any(String),
+    });
   });
 
-  it('空のチャンネル名はnullを返す', () => {
-    const element = createMockElement('chat-channel-preview-');
-    const result = parseChannelPreview(element, 'John: Hello');
+  it('URL含みメッセージを正しく解析する', () => {
+    const element = createMockElement('chat-channel-preview-tmine');
+    const text = 'tmine\nあなた: https://next-engine.net/\n9/16';
+    const result = parseChannelPreview(element, text);
 
-    expect(result).toBeNull();
+    expect(result).toEqual({
+      channel: 'tmine',
+      sender: 'あなた',
+      message: 'https://next-engine.net/',
+      timestamp: expect.any(String),
+    });
   });
 
-  it('空のメッセージはnullを返す', () => {
+  it('メッセージ中のコロンは本文に含まれる', () => {
     const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, 'John:  ');
-
-    // trim後に空文字列になるため null
-    expect(result).toBeNull();
-  });
-
-  it('空の送信者名はnullを返す', () => {
-    const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, ': Hello');
-
-    expect(result).toBeNull();
-  });
-
-  it('メッセージ中のコロンは2つ目以降が本文に含まれる', () => {
-    const element = createMockElement('chat-channel-preview-general');
-    const result = parseChannelPreview(element, 'John: time is 12:30');
+    const text = 'general\nJohn: time is 12:30\n9/19';
+    const result = parseChannelPreview(element, text);
 
     expect(result).toEqual({
       channel: 'general',
@@ -59,5 +58,37 @@ describe('parseChannelPreview', () => {
       message: 'time is 12:30',
       timestamp: expect.any(String),
     });
+  });
+
+  it('メッセージなしのデスクチャットはnullを返す', () => {
+    const element = createMockElement('chat-channel-preview-たかはし さんのデスク');
+    const text = 'たかはし さんのデスク';
+    const result = parseChannelPreview(element, text);
+
+    expect(result).toBeNull();
+  });
+
+  it('空のチャンネル名はnullを返す', () => {
+    const element = createMockElement('chat-channel-preview-');
+    const text = 'general\nJohn: Hello\n9/19';
+    const result = parseChannelPreview(element, text);
+
+    expect(result).toBeNull();
+  });
+
+  it('コロン+スペースなしの行のみの場合はnullを返す', () => {
+    const element = createMockElement('chat-channel-preview-general');
+    const text = 'general\nno colon here\n9/19';
+    const result = parseChannelPreview(element, text);
+
+    expect(result).toBeNull();
+  });
+
+  it('送信者名が空の場合はnullを返す', () => {
+    const element = createMockElement('chat-channel-preview-general');
+    const text = 'general\n: Hello\n9/19';
+    const result = parseChannelPreview(element, text);
+
+    expect(result).toBeNull();
   });
 });
