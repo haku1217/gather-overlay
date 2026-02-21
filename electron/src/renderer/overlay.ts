@@ -6,7 +6,7 @@ interface OverlayHandle {
 }
 
 /** チャンネル/送信者に基づく色のハッシュ生成 */
-function generateColor(key: string): string {
+export function generateColor(key: string): string {
   let hash = 0;
   for (let i = 0; i < key.length; i++) {
     const char = key.charCodeAt(i);
@@ -19,7 +19,7 @@ function generateColor(key: string): string {
 }
 
 /** 使用可能な縦位置（レーン）を管理 */
-function createLaneManager(containerHeight: number, lineHeight: number) {
+export function createLaneManager(containerHeight: number, lineHeight: number) {
   const laneCount = Math.max(1, Math.floor(containerHeight / lineHeight));
   const activeLanes = new Set<number>();
 
@@ -42,7 +42,8 @@ function createLaneManager(containerHeight: number, lineHeight: number) {
 }
 
 export function createOverlay(container: HTMLElement): OverlayHandle {
-  const lineHeight = CONFIG.FONT_SIZE + 16;
+  const LINE_PADDING = 16;
+  const lineHeight = CONFIG.FONT_SIZE + LINE_PADDING;
   const laneManager = createLaneManager(window.innerHeight, lineHeight);
 
   function addMessage(message: ChatMessage): void {
