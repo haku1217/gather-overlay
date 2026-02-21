@@ -34,16 +34,15 @@ body {
     1px -1px 2px rgba(0, 0, 0, 0.6),
     -1px 1px 2px rgba(0, 0, 0, 0.6);
   animation: scroll-left linear forwards;
-  right: 0;
-  transform: translateX(100%);
+  left: 100%;
   pointer-events: none;
 }
 
 @keyframes scroll-left {
   from {
-    transform: translateX(100vw);
+    transform: translateX(0);
   }
   to {
-    transform: translateX(-100%);
+    transform: translateX(calc(-100% - 100vw));
   }
 }

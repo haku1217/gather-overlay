@@ -25,7 +25,7 @@ export const CONFIG = {
   /** HTTPサーバーのデフォルトポート */
   DEFAULT_PORT: 19274,
   /** メッセージの表示時間 (ms) */
-  DISPLAY_DURATION: 8000,
+  DISPLAY_DURATION: 14000,
   /** フォントサイズ (px) */
   FONT_SIZE: 36,
 } as const;
