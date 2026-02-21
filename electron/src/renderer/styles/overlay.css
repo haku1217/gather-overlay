@@ -1,0 +1,49 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  -webkit-app-region: no-drag;
+}
+
+#overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.overlay-message {
+  position: absolute;
+  white-space: nowrap;
+  font-family: 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  font-weight: bold;
+  color: white;
+  text-shadow:
+    2px 2px 4px rgba(0, 0, 0, 0.8),
+    -1px -1px 2px rgba(0, 0, 0, 0.6),
+    1px -1px 2px rgba(0, 0, 0, 0.6),
+    -1px 1px 2px rgba(0, 0, 0, 0.6);
+  animation: scroll-left linear forwards;
+  right: 0;
+  transform: translateX(100%);
+  pointer-events: none;
+}
+
+@keyframes scroll-left {
+  from {
+    transform: translateX(100vw);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}

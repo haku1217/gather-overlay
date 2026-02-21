@@ -1,0 +1,26 @@
+{
+  "name": "electron",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./out/main/index.js",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "package": "electron-builder --mac",
+    "package:win": "electron-builder --win"
+  },
+  "dependencies": {
+    "@gather-overlay/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8",
+    "electron-vite": "^3.0.0",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.4"
+  }
+}
