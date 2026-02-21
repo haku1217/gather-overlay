@@ -1,0 +1,18 @@
+{
+  "manifest_version": 3,
+  "name": "Gather Overlay",
+  "version": "0.0.1",
+  "description": "GatherのチャットメッセージをElectronオーバーレイへ転送する",
+  "permissions": [],
+  "host_permissions": ["https://app.gather.town/*"],
+  "content_scripts": [
+    {
+      "matches": ["https://app.gather.town/*"],
+      "js": ["src/content.ts"]
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.ts",
+    "type": "module"
+  }
+}

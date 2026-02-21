@@ -1,0 +1,23 @@
+{
+  "name": "chrome-extension",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite build --watch",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@gather-overlay/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.28",
+    "@types/chrome": "^0.0.287",
+    "happy-dom": "^20.7.0",
+    "vite": "^6.0.7",
+    "vitest": "^3.0.4"
+  }
+}
