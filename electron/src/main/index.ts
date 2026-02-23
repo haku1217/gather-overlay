@@ -3,10 +3,14 @@ import { join } from 'node:path';
 import { createHttpServer } from './http-server.js';
 import { CONFIG } from '@gather-overlay/shared';
 
+type WindowMode = 'float' | 'normal';
+
 let mainWindow: BrowserWindow | null = null;
 let controlWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
 let currentDisplayId: number | null = null;
+let windowMode: WindowMode = 'float';
+let isQuitting = false;
 
 interface DisplayInfo {
   readonly id: number;
@@ -75,20 +79,22 @@ function moveToDisplay(window: BrowserWindow, display: Electron.Display): void {
   broadcastDisplays();
 }
 
-function createControlWindow(): BrowserWindow {
+function createControlWindow(mode: WindowMode): BrowserWindow {
+  const isFloat = mode === 'float';
+
   const window = new BrowserWindow({
-    width: 220,
-    height: 160,
-    resizable: false,
-    minimizable: false,
+    width: isFloat ? 220 : 280,
+    height: isFloat ? 200 : 240,
+    resizable: !isFloat,
+    minimizable: !isFloat,
     maximizable: false,
-    closable: false,
-    frame: false,
-    alwaysOnTop: true,
-    skipTaskbar: true,
+    closable: !isFloat,
+    frame: !isFloat,
+    alwaysOnTop: isFloat,
+    skipTaskbar: isFloat,
     hasShadow: true,
     transparent: false,
-    titleBarStyle: 'hidden',
+    titleBarStyle: isFloat ? 'hidden' : 'hiddenInset',
     vibrancy: 'under-window',
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
@@ -97,8 +103,20 @@ function createControlWindow(): BrowserWindow {
     },
   });
 
-  window.setVisibleOnAllWorkspaces(true);
-  window.setAlwaysOnTop(true, 'floating');
+  if (isFloat) {
+    window.setVisibleOnAllWorkspaces(true);
+    window.setAlwaysOnTop(true, 'floating');
+  }
+
+  // normalモードではcloseでquitせず非表示にする
+  if (!isFloat) {
+    window.on('close', (event) => {
+      // app.quit()経由の場合はそのまま閉じる
+      if (isQuitting) return;
+      event.preventDefault();
+      window.hide();
+    });
+  }
 
   if (process.env['ELECTRON_RENDERER_URL'] !== undefined) {
     const url = new URL(process.env['ELECTRON_RENDERER_URL']);
@@ -107,6 +125,11 @@ function createControlWindow(): BrowserWindow {
   } else {
     void window.loadFile(join(__dirname, '../renderer/control.html'));
   }
+
+  // ウィンドウ準備完了後にモード情報を送信
+  window.webContents.on('did-finish-load', () => {
+    window.webContents.send('window-mode-changed', mode);
+  });
 
   return window;
 }
@@ -132,6 +155,16 @@ function createTray(overlayWindow: BrowserWindow): Tray {
 
     const template: Electron.MenuItemConstructorOptions[] = [
       ...displayItems,
+      { type: 'separator' },
+      {
+        label: 'Show Control',
+        click: (): void => {
+          if (controlWindow !== null && !controlWindow.isDestroyed()) {
+            controlWindow.show();
+            controlWindow.focus();
+          }
+        },
+      },
       { type: 'separator' },
       {
         label: 'Quit',
@@ -168,9 +201,50 @@ function setupIpcHandlers(): void {
     }
   });
 
+  ipcMain.handle('toggle-window-mode', () => {
+    const newMode: WindowMode = windowMode === 'float' ? 'normal' : 'float';
+
+    // 現在のウィンドウ位置を記憶
+    const bounds = controlWindow?.getBounds();
+    controlWindow?.destroy();
+    controlWindow = null;
+
+    windowMode = newMode;
+    controlWindow = createControlWindow(newMode);
+
+    // 位置を復元
+    if (bounds !== undefined) {
+      controlWindow.setBounds({ x: bounds.x, y: bounds.y });
+    }
+
+    // normalモードではDockアイコンを表示して通常のウィンドウ操作を可能にする
+    if (process.platform === 'darwin') {
+      if (newMode === 'normal') {
+        void app.dock.show();
+      } else {
+        app.dock.hide();
+      }
+    }
+
+    return newMode;
+  });
+
+  ipcMain.handle('get-window-mode', () => windowMode);
+
+  ipcMain.handle('send-debug-message', (_event, text: string) => {
+    if (mainWindow === null) return;
+    mainWindow.webContents.send('new-message', {
+      channel: 'debug',
+      sender: 'Debug',
+      message: text,
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   ipcMain.handle('quit-app', () => {
     // closable: false のウィンドウは app.quit() だけでは閉じないため
     // 全ウィンドウを明示的に破棄してから終了する
+    isQuitting = true;
     mainWindow?.destroy();
     controlWindow?.destroy();
     tray?.destroy();
@@ -181,8 +255,12 @@ function setupIpcHandlers(): void {
 app
   .whenReady()
   .then(() => {
-    // Dockアイコンを非表示（Tray専用アプリ）
+    // Dockアイコンを設定し非表示（Tray専用アプリ、normalモード時のみ表示）
     if (process.platform === 'darwin') {
+      const dockIcon = nativeImage.createFromPath(join(__dirname, '../../build/icon.png'));
+      if (!dockIcon.isEmpty()) {
+        app.dock.setIcon(dockIcon);
+      }
       app.dock.hide();
     }
 
@@ -192,7 +270,7 @@ app
     mainWindow = createOverlayWindow(primaryDisplay);
 
     // コントロールウィンドウを作成
-    controlWindow = createControlWindow();
+    controlWindow = createControlWindow(windowMode);
 
     // システムトレイを作成（メニューバーに空きがあれば表示される）
     tray = createTray(mainWindow);
@@ -203,6 +281,18 @@ app
     });
 
     server.start();
+
+    // macOS: Dockアイコンクリック時に非表示のコントロールウィンドウを再表示
+    app.on('activate', () => {
+      if (controlWindow !== null && !controlWindow.isDestroyed()) {
+        controlWindow.show();
+        controlWindow.focus();
+      }
+    });
+
+    app.on('before-quit', () => {
+      isQuitting = true;
+    });
 
     app.on('window-all-closed', () => {
       server.stop();

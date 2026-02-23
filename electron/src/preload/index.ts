@@ -12,6 +12,7 @@ interface DisplayInfo {
 }
 
 type DisplaysCallback = (displays: readonly DisplayInfo[]) => void;
+type WindowModeCallback = (mode: string) => void;
 
 contextBridge.exposeInMainWorld('electronAPI', {
   onNewMessage: (callback: MessageCallback): void => {
@@ -26,6 +27,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onDisplaysChanged: (callback: DisplaysCallback): void => {
     ipcRenderer.on('displays-changed', (_event, displays: readonly DisplayInfo[]) => {
       callback(displays);
+    });
+  },
+  toggleWindowMode: (): Promise<string> => ipcRenderer.invoke('toggle-window-mode'),
+  sendDebugMessage: (text: string): Promise<void> => ipcRenderer.invoke('send-debug-message', text),
+  getWindowMode: (): Promise<string> => ipcRenderer.invoke('get-window-mode'),
+  onWindowModeChanged: (callback: WindowModeCallback): void => {
+    ipcRenderer.on('window-mode-changed', (_event, mode: string) => {
+      callback(mode);
     });
   },
 });

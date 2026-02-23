@@ -16,6 +16,10 @@
         user-select: none;
         overflow: hidden;
       }
+      /* normalモード: トラフィックライト分の上部余白 */
+      body.normal-mode {
+        padding-top: 36px;
+      }
       .title {
         font-size: 11px;
         font-weight: 600;
@@ -57,16 +61,73 @@
         padding: 6px 8px;
         cursor: pointer;
         font-size: 12px;
-        width: 100%;
+        flex: 1;
         transition: background 0.15s;
       }
       .quit-btn:hover { background: #4a2525; }
+      .bottom-actions {
+        display: flex;
+        gap: 4px;
+      }
+      .mode-btn {
+        -webkit-app-region: no-drag;
+        background: #1a2a3a;
+        border: 1px solid #2a4a6a;
+        border-radius: 4px;
+        color: #90caf9;
+        padding: 6px 8px;
+        cursor: pointer;
+        font-size: 12px;
+        flex: 1;
+        transition: background 0.15s;
+      }
+      .mode-btn:hover { background: #253a4a; }
+      .debug-section {
+        margin-bottom: 8px;
+        -webkit-app-region: no-drag;
+      }
+      .debug-row {
+        display: flex;
+        gap: 4px;
+      }
+      .debug-input {
+        flex: 1;
+        background: #2a2a2a;
+        border: 1px solid #444;
+        border-radius: 4px;
+        color: #e0e0e0;
+        padding: 5px 8px;
+        font-size: 12px;
+        outline: none;
+      }
+      .debug-input:focus { border-color: #666; }
+      .debug-btn {
+        background: #2a3a2a;
+        border: 1px solid #3a5a3a;
+        border-radius: 4px;
+        color: #a5d6a7;
+        padding: 5px 10px;
+        cursor: pointer;
+        font-size: 12px;
+        white-space: nowrap;
+        transition: background 0.15s;
+      }
+      .debug-btn:hover { background: #354535; }
     </style>
   </head>
   <body>
     <div class="title">Gather Overlay</div>
     <div id="display-list" class="display-list"></div>
-    <button id="quit-btn" class="quit-btn">Quit</button>
+    <div class="debug-section">
+      <div class="debug-row">
+        <input id="debug-input" class="debug-input" type="text" placeholder="テストメッセージ..." />
+        <button id="debug-btn" class="debug-btn">Send</button>
+      </div>
+    </div>
+    <div class="bottom-actions">
+      <button id="mode-btn" class="mode-btn">&#x1f4cc; Normal</button>
+      <button id="quit-btn" class="quit-btn">Quit</button>
+    </div>
     <script type="module" src="./control.ts"></script>
   </body>
 </html>

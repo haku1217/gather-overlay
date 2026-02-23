@@ -8,6 +8,7 @@ files:
   - resources/**/*
 mac:
   category: public.app-category.utilities
+  icon: build/icon.icns
   target:
     - dmg
 win:
