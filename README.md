@@ -4,6 +4,8 @@
 
 Gatherのチャットを自動的に拾って流すChrome拡張が付属していますが、HTTPリクエストを送れるものなら何でもオーバーレイ表示できます。Slack、Discord、CI通知、自作スクリプトなど、用途は自由です。
 
+<video src="public/demo.mp4" autoplay loop muted playsinline></video>
+
 ## インストール
 
 ### デスクトップアプリ (Electron)

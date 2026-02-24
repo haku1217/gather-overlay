@@ -24,6 +24,9 @@ chrome-extension/dist-snippet/
 .env.local
 .env.*.local
 
+# Large media
+*.mov
+
 # Logs
 *.log
 npm-debug.log*
